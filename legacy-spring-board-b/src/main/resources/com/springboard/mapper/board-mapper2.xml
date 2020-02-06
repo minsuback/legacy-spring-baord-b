@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- package-name : com.springboard.mapper, class-name : BoardMapper -->
+<mapper namespace="com.springboard.mapper.BoardMapper">
+	
+	<select id="selectBoard" resultType="com.springboard.vo.BoardVO">
+		SELECT bno, title, writer, regdate, updatedate, deleted, readcount
+		FROM tbl_board
+		ORDER BY bno DESC
+	</select>
+	
+	<!-- 
+	<insert id="insertBoard" parameterType="com.springboard.vo.BoardVO"
+			useGeneratedKeys="true" keyColumn="bno" keyProperty="bno">
+		INSERT INTO tbl_board (bno, title, writer, content)
+		VALUES (seq_board.nextval, #{title}, #{writer}, #{content})
+	</insert>
+	-->
+	<insert id="insertBoard" parameterType="com.springboard.vo.BoardVO">
+		<selectKey keyProperty="bno" resultType="int" order="AFTER">
+			SELECT seq_board.currval FROM DUAL
+		</selectKey>
+		INSERT INTO tbl_board (bno, title, writer, content)
+		VALUES (seq_board.nextval, #{title}, #{writer}, #{content})
+	</insert>
+</mapper>
+
+
+
+
+

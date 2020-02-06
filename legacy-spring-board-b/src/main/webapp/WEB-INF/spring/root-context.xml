@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:env.properties" />
+	</bean>
+	
+	<bean id="apacheDataSource"
+		  class="org.apache.commons.dbcp2.BasicDataSource">
+		<property name="driverClassName" value="${datasource.driver}" />
+		<property name="url" value="${datasource.url}" />
+		<property name="username" value="${datasource.username}" />
+		<property name="password" value="${datasource.password}" />
+		<property name="minIdle" value="${datasource.minidle}" />
+		<property name="maxTotal" value="${datasource.maxpool}" />
+		<property name="maxWaitMillis" value="${datasource.conntimeout}" />
+	</bean>
+	
+	<bean id="hikariDataSource"
+		  class="com.zaxxer.hikari.HikariDataSource">
+		<property name="driverClassName" value="${datasource.driver}" />
+		<property name="jdbcUrl" value="${datasource.url}" />
+		<property name="username" value="${datasource.username}" />
+		<property name="password" value="${datasource.password}" />
+		<property name="minimumIdle" value="${datasource.minidle}" />
+		<property name="maximumPoolSize" value="${datasource.maxpool}" />
+		<property name="connectionTimeout" value="${datasource.conntimeout}" />
+	</bean>	
+
+	<bean id="replyService"
+		  class="com.springboard.service.ReplyServiceImpl">
+		<property name="replyMapper" ref="replyMapper" />
+	</bean>
+	
+	<bean id="memberService"
+		  class="com.springboard.service.MemberServiceImpl">
+		<property name="memberMapper" ref="memberMapper" />
+	</bean>
+	
+	<!-- beans for mybatis & mybatis-spring -->
+	<!-- SqlSessionFactoryBean.getObject()를 호출해서 SqlSessionFactory 생성 -->
+	<bean id="sqlSessionFactory"
+		  class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="apacheDataSource" />
+		<property name="configLocation" 
+				  value="classpath:mybatis-config.xml" />
+	</bean>	
+	<bean id="sessionTemplate"
+		  class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactory" />	  
+	</bean>
+	
+	<mybatis-spring:scan base-package="com.springboard.mapper"/>	
+	<bean id="boardService"
+		  class="com.springboard.service.BoardServiceImpl">
+		<property name="boardDao" ref="mapperBoardDao" />
+		<property name="boardMapper" ref="boardMapper" />
+		<property name="txManager" ref="txManager" />
+		<property name="txTemplate" ref="txTemplate" />
+	</bean>
+	<bean id="mapperBoardDao"
+		  class="com.springboard.repository.MyBatisMapperBoardDao">
+		<property name="boardMapper" ref="boardMapper" />
+	</bean>	
+	<bean id="txManager"
+		  class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="apacheDataSource" />
+	</bean>	
+	<bean id="txTemplate"
+		  class="org.springframework.transaction.support.TransactionTemplate">
+		<property name="transactionManager" ref="txManager" />
+	</bean>
+	
+	<!-- tx:advice : 미리 만들어진 advice bean -->
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="delete*" />
+		</tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+		<aop:pointcut id="txPointcut"
+					  expression="within(com.springboard.service.*)" />
+		<aop:advisor advice-ref="txAdvice"
+					 pointcut-ref="txPointcut" />
+	</aop:config>
+	
+
+</beans>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

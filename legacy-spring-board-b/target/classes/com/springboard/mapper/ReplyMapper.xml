@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.springboard.mapper.ReplyMapper">
+
+	<insert id="insertReply" parameterType="ReplyVO"
+			useGeneratedKeys="true" keyColumn="rno" keyProperty="rno">
+		INSERT INTO tbl_reply (
+			rno, bno, 
+			reply, replyer, 
+			gno, sno, depth
+		)
+		VALUES (
+			seq_reply.nextval, #{ bno }, 
+			#{ reply }, #{ replyer },
+			seq_reply.currval, 1, 0
+		)
+	</insert>
+	<insert id="insertReply2" parameterType="ReplyVO"
+			useGeneratedKeys="true" keyColumn="rno" keyProperty="rno">
+		INSERT INTO tbl_reply (
+			rno, bno, 
+			reply, replyer, 
+			gno, sno, depth
+		)
+		VALUES (
+			seq_reply.nextval, #{ bno }, 
+			#{ reply }, #{ replyer }, 
+			#{ gno }, #{ sno }, #{ depth }
+		)
+	</insert>
+	<select id="selectReplyByRno" resultType="ReplyVO" parameterType="int">
+		SELECT rno, bno, reply, replyer, replydate, updatedate, gno, sno, depth, deleted
+		FROM tbl_reply
+		WHERE rno = #{ rno }
+	</select>
+	<update id="updateSno" parameterType="ReplyVO">
+		<![CDATA[
+		UPDATE tbl_reply
+		SET sno = sno + 1
+		WHERE gno = #{ gno } AND sno > #{ sno }
+		]]>
+	</update>
+	
+	<select id="selectRepliesByBno" resultType="ReplyVO" parameterType="int">
+		SELECT rno, bno, reply, replyer, replydate, updatedate, gno, sno, depth, deleted
+		FROM tbl_reply
+		WHERE bno = #{ bno }
+		ORDER BY gno DESC, sno ASC
+	</select>
+	
+	<update id="deleteReply" parameterType="int">
+		UPDATE tbl_reply
+		SET deleted = '1'
+		WHERE rno = #{ rno }
+	</update>
+	
+	<update id="updateReply" parameterType="ReplyVO">
+		UPDATE tbl_reply
+		SET reply = #{ reply }
+		WHERE rno = #{ rno }
+	</update>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
